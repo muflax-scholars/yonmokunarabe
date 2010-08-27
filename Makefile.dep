@@ -1,4 +1,4 @@
 ai.o: ai.c
 board.o: board.c
 test.o: test.c
-yonmokunarabe.o: yonmokunarabe.c
+yonmokunarabe.o: yonmokunarabe.c yonmokunarabe.h
