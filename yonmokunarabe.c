@@ -35,10 +35,14 @@ static void usage()
 /* Parses arg and sets board_size accordingly. */
 void parse_size(char* arg, board_size* size)
 {
-    /* #TODO */
-    printf("Ignoring size, assuming 5x5.\n");
-    size->x = 5;
-    size->y = 5;
+    char *end;
+    size->x = (int) strtol(arg, &end, 10); 
+    if (*end != '\0')
+        size->y = (int) strtol(end+1, NULL, 10);
+    if (size->x == 0 || size->y == 0) {
+        printf("Invalid size. Use WIDTHxHEIGHT, like 7x6.\n");
+        usage();
+    }
 }
 
 int main (int argc, char * const argv[])
