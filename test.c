@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include "ai.h"
 #include "board.h"
+#include "common.h"
+
+/* Global variables. */
+short verbose = 1;
 
 int main (int argc, const char *argv[])
 {

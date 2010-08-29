@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "ai.h"
 #include "board.h"
+#include "common.h"
 
 void solve(board_size* size)
 {

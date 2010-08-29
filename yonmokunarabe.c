@@ -13,10 +13,11 @@
 #endif
 #include "ai.h"
 #include "board.h"
+#include "common.h"
 #include "yonmokunarabe.h"
 
 /* Global variables. */
-unsigned short verbose = 0;
+short verbose = 0;
 
 /* Prints usage. */
 static void usage() 
