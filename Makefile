@@ -1,8 +1,8 @@
 CC=gcc
-CFLAGS=-O2 -g -Wall -ansi -std=c99
+CFLAGS=-g -Wall -ansi -std=c99
 LDFLAGS=
 
-FILES = board.o ai.o
+FILES = board.o ai.o hash.o
 
 all: yonmokunarabe test 
 

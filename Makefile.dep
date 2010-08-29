@@ -1,4 +1,5 @@
-ai.o: ai.c ai.h board.h common.h
+ai.o: ai.c ai.h board.h common.h hash.h
 board.o: board.c board.h common.h
+hash.o: hash.c hash.h board.h
 test.o: test.c ai.h board.h common.h
 yonmokunarabe.o: yonmokunarabe.c ai.h board.h common.h yonmokunarabe.h

@@ -7,7 +7,17 @@
 
 #include "board.h"
 
-void solve(board_size *size);
+typedef enum { 
+    UNKNOWN    = -3,
+    LOSE       = -2,
+    MAYBE_LOSE = -1,
+    DRAW       = 0,
+    MAYBE_WIN  = 1,
+    WIN        = 2
+} board_state;
+
+board_state solve(board *board);
+board_state alpha_beta(board *board, board_state alpha, board_state beta);
 
 #endif /* end of include guard: YONMOKUNARABE_AI_H */
 

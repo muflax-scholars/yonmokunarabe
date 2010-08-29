@@ -50,6 +50,7 @@ int main (int argc, char * const argv[])
     int c;
     enum modes mode = MODE_NONE;
     board_size size;
+    board board;
 #ifdef __GNU_LIBRARY__
     int option_index;
     static struct option long_options[] = {
@@ -85,7 +86,9 @@ int main (int argc, char * const argv[])
             usage();
             break;
         case MODE_SOLVE:
-            solve(&size);            
+            init_board(&board, &size);
+            solve(&board);
+            destroy_board(&board);
             break;
         default:
             abort();
