@@ -129,9 +129,6 @@ static char* all_tests() {
 
 int main (int argc, const char *argv[])
 {
-    /* Initialization. */
-    init_zobrist();
-
     char *result = all_tests();
     if (result != 0) {
         printf("%s\n", result);

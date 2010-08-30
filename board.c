@@ -45,6 +45,10 @@ void init_board(board *board, board_size *size)
     if ((board->history = malloc(sizeof(int) * (board->max_turns))) == NULL)
         abort();
     memset(board->history, 0, sizeof(int) * board->max_turns);
+    
+    /* Used for hash calculation. It's only necessary to call this once for the
+     * whole run, but it's convenient to put it here and it's fast anyway. */
+    init_zobrist();
 }
 
 /* Frees all associated structures within a board so you can free it. 

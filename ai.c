@@ -12,6 +12,8 @@ unsigned int ai_counter = 0; /* Steps the AI took to solve a board. */
 
 #define AI_DEBUG 0 /* print AI debug info */
 
+int reordered_moves[16]; /* Contains columns to check in new order. */
+
 /* Solves board from scratch, prints result. */
 board_state solve(board *board)
 {
@@ -20,8 +22,7 @@ board_state solve(board *board)
     printf("Solving %dx%d board now.\n", board->size->x, board->size->y);
     print_board(board);
     
-    ai_counter = 0;
-    init_hash();
+    init_ai(board);
     
     printf("Solving...\n");
     res = alpha_beta(board, LOSE, WIN);
@@ -53,7 +54,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     board_state hash, res;
     int threat = -1;
     int possible_moves = 0;
-    int i;
+    int i, j;
 
     ai_counter += 1;
                 
@@ -161,7 +162,9 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 #if AI_DEBUG == 1
         printf("Testing all moves...\n");
 #endif
-        for (i = 0; i < board->size->x; i++) {
+        /* Iterate over re-ordered moves. */
+        for (j = 0; j < board->size->x; j++) {
+            i = reordered_moves[j];
             if (column_free(board, i)) {
                 move(board, i);
                 res = -alpha_beta(board, -beta, -alpha);
@@ -194,7 +197,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
  * Returns the column or -1 if no good move was found. */
 int recommend_move(board *board)
 {
-    int i;
+    int i, j;
     int best_move     = -1;
     board_state alpha = LOSE;
     board_state beta  = WIN;
@@ -204,11 +207,12 @@ int recommend_move(board *board)
            board->size->x, board->size->y);
     print_board(board);
     
-    ai_counter = 0;
-    init_hash();
+    init_ai(board);
     
     printf("Solving...\n");
-    for (i = 0; i < board->size->x; i++) {
+    for (j = 0; j < board->size->x; j++) {
+        /* Iterate over re-ordered moves. */
+        i = reordered_moves[j];
         if (column_free(board, i)) {
             move(board, i);
             if (has_won(board, board->player^1)) {
@@ -245,4 +249,25 @@ int recommend_move(board *board)
     print_hash_stats();
     printf("Result: %d\n", best_move);
     return best_move;
+}
+
+/* Initialize move reordering for given board size. */
+void init_reorder(board_size *size)
+{
+    int i;
+
+    printf("Initializing move order history...\n");
+    /* #TODO: start from center */
+    for (i = 0; i < size->x; i++) {
+        reordered_moves[i] = i;
+    }
+}
+
+    
+/* Initialize everything needed for AI operation. */
+void init_ai(board *board)
+{
+    ai_counter = 0;
+    init_hash();
+    init_reorder(board->size);
 }
