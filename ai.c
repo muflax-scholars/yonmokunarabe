@@ -3,6 +3,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "ai.h"
 #include "board.h"
 #include "common.h"
@@ -12,7 +13,8 @@ unsigned int ai_counter = 0; /* Steps the AI took to solve a board. */
 
 #define AI_DEBUG 0 /* print AI debug info */
 
-int reordered_moves[16]; /* Contains columns to check in new order. */
+int move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column for 
+                                         each depth. */ 
 
 /* Solves board from scratch, prints result. */
 board_state solve(board *board)
@@ -55,6 +57,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     int threat = -1;
     int possible_moves = 0;
     int i, j;
+    int reordered_moves[MAX_COLS]; /* Contains columns to check. */
 
     ai_counter += 1;
                 
@@ -162,7 +165,19 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 #if AI_DEBUG == 1
         printf("Testing all moves...\n");
 #endif
-        /* Iterate over re-ordered moves. */
+        /* Prepare re-ordered moves. */
+        for (i = 0; i < board->size->x; i++) {
+            reordered_moves[i] = i;
+        }
+        reorder_moves(board, reordered_moves);
+#if AI_DEBUG == 1
+        printf("Reordered: ");
+        for (i = 0; i < board->size->x; i++) {
+            printf("%d ", reordered_moves[i]);
+        }
+        printf("\n");
+#endif
+
         for (j = 0; j < board->size->x; j++) {
             i = reordered_moves[j];
             if (column_free(board, i)) {
@@ -173,6 +188,9 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 
                 if (res > alpha) {
                     if (res >= beta) { /* cut-off */
+                        /* Reward columns with many cut-offs. */
+                        score_move(board, i);
+                        
                         /* It may get better, but this is irrelevant now. */
                         if (res == DRAW && possible_moves > 0) {
                             res = MAYBE_WIN;
@@ -180,16 +198,17 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 #if AI_DEBUG == 1
                         printf("Cut-off: %d\n", res);
 #endif
-                        return set_hash(board, res);
+                        goto end;
                     }
                     alpha = res;
                 }
             }
         }
 #if AI_DEBUG == 1
-        printf("Res: %d\n", alpha);
+        printf("Res: %d\n", res);
 #endif
-        return set_hash(board, alpha);
+        end:
+        return set_hash(board, res);
     }
 }
 
@@ -197,7 +216,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
  * Returns the column or -1 if no good move was found. */
 int recommend_move(board *board)
 {
-    int i, j;
+    int i;
     int best_move     = -1;
     board_state alpha = LOSE;
     board_state beta  = WIN;
@@ -210,9 +229,7 @@ int recommend_move(board *board)
     init_ai(board);
     
     printf("Solving...\n");
-    for (j = 0; j < board->size->x; j++) {
-        /* Iterate over re-ordered moves. */
-        i = reordered_moves[j];
+    for (i = 0; i < board->size->x; i++) {
         if (column_free(board, i)) {
             move(board, i);
             if (has_won(board, board->player^1)) {
@@ -254,15 +271,51 @@ int recommend_move(board *board)
 /* Initialize move reordering for given board size. */
 void init_reorder(board_size *size)
 {
-    int i;
+    int i, j;
 
     printf("Initializing move order history...\n");
     /* #TODO: start from center */
     for (i = 0; i < size->x; i++) {
-        reordered_moves[i] = i;
+        /*reordered_moves[i] = i;*/
+        for (j = 0; j < MAX_TURNS; j++) {
+            move_scores[j][i] = 0;
+        }
     }
 }
 
+/* This is an (ugly) alternative to qsort_r() or nested functions. Sure,
+ * gcc+glibc support both, but that would break my imposed standard compliance.
+ * As re-entrance and thread-safety are irrelevant here anyway, the code should
+ * be fine. */
+static int _depth = 0; /* Used to pass an argument into move_cmp(). */
+
+/* Comparison function for sorting moves. */
+static int move_cmp(const void *a, const void *b) 
+{ 
+    const int *ia = (const int *)a; // casting pointer types 
+    const int *ib = (const int *)b;
+    return move_scores[_depth][*ia] - move_scores[_depth][*ib];
+} 
+
+/* Sorts moves according to scores. */
+void reorder_moves(board *board, int moves[])
+{
+    _depth = board->turn;
+    qsort(moves, board->size->x, sizeof(int), move_cmp);
+}
+
+/* Adjust score for given column. */
+void score_move(board *board, int col)
+{
+    int i;
+    for (i = 0; i < board->size->x; i++) {
+        if (i == col) {
+            move_scores[board->turn][col] += 1;
+        } else {
+            move_scores[board->turn][col] -= 1;
+        }
+    }
+}
     
 /* Initialize everything needed for AI operation. */
 void init_ai(board *board)
