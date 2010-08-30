@@ -80,6 +80,9 @@ int main (int argc, char * const argv[])
         }
     }
     
+    /* Initialization. */
+    init_zobrist();
+    
     /* Start operation. */
     switch (mode) {
         case MODE_NONE:

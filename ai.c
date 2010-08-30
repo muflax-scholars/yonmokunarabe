@@ -10,6 +10,8 @@
 
 unsigned int ai_counter = 0; /* Steps the AI took to solve a board. */
 
+#define AI_DEBUG 0 /* print AI debug info */
+
 /* Solves board from scratch, prints result. */
 board_state solve(board *board)
 {
@@ -24,6 +26,7 @@ board_state solve(board *board)
     printf("Solving...\n");
     res = alpha_beta(board, LOSE, WIN);
     printf("Done. Took %d steps.\n", ai_counter);
+    print_hash_stats();
 
     printf("Result: ");
     switch (res) {
@@ -53,6 +56,11 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     int i;
 
     ai_counter += 1;
+                
+#if AI_DEBUG == 1
+    printf("Starting alpha-beta #%d...\n", ai_counter);
+    print_board(board);
+#endif
 
     /* Check if the game is already over. */
     if (board->turn >= board->max_turns) {
@@ -61,6 +69,9 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 
     /* Check if a solution is available in the hash. */
     hash = get_hash(board);
+#if AI_DEBUG == 1
+    printf("Hash: %d\n", hash);
+#endif
     switch (hash) {
         /* The hash may not be accurate. If it is not, use it to improve our
          * boundaries. If that already allows us to make an accurate assessment,
@@ -87,6 +98,9 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
             break;
     }
     
+#if AI_DEBUG == 1
+    printf("Checking for threats and winning moves...\n");
+#endif
     /* Detect all threats and winning moves. If there is more than 1 threat, 
      * the board is lost. */
     for (i = 0; i < board->size->x; i++) {
@@ -94,9 +108,16 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
             /* Note number of available moves for later. */
             possible_moves += 1;
 
+#if AI_DEBUG == 1
+            printf("Threat on %d?\n", i);
+#endif
             /* threat? */
             fast_move(board, i, board->player^1);
             if (has_won(board, board->player^1)) {
+#if AI_DEBUG == 1
+                printf("Threat found: %d\n", i);
+                print_board(board);
+#endif
                 if (threat == -1) {
                     threat = i;
                 } else { /* already another threat */
@@ -106,9 +127,15 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
             }
             fast_undo(board, i, board->player^1);
 
+#if AI_DEBUG == 1
+            printf("Winning move on %d?\n", i);
+#endif
             /* winning move? */
             fast_move(board, i, board->player);
             if (has_won(board, board->player)) {
+#if AI_DEBUG == 1
+                printf("Winning move found: %d\n", i);
+#endif
                 fast_undo(board, i, board->player);
                 return set_hash(board, WIN);
             }
@@ -118,6 +145,9 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 
     /* There is a threat, so act against it. */
     if (threat != -1) {
+#if AI_DEBUG == 1
+        printf("Acting on threat...\n");
+#endif
         move(board, threat);
         res = -alpha_beta(board, -beta, -alpha);
         undo(board, 1);
@@ -128,6 +158,9 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
             return set_hash(board, res);
         }
     } else { /* No threat, so try all possible moves. */
+#if AI_DEBUG == 1
+        printf("Testing all moves...\n");
+#endif
         for (i = 0; i < board->size->x; i++) {
             if (column_free(board, i)) {
                 move(board, i);
@@ -141,12 +174,18 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
                         if (res == DRAW && possible_moves > 0) {
                             res = MAYBE_WIN;
                         }
+#if AI_DEBUG == 1
+                        printf("Cut-off: %d\n", res);
+#endif
                         return set_hash(board, res);
                     }
                     alpha = res;
                 }
             }
         }
+#if AI_DEBUG == 1
+        printf("Res: %d\n", alpha);
+#endif
         return set_hash(board, alpha);
     }
 }
@@ -160,20 +199,36 @@ int recommend_move(board *board)
     board_state alpha = LOSE;
     board_state beta  = WIN;
     board_state res   = UNKNOWN; 
-
+    
+    printf("Recommending move on %dx%d board now.\n", 
+           board->size->x, board->size->y);
+    print_board(board);
+    
+    ai_counter = 0;
+    init_hash();
+    
+    printf("Solving...\n");
     for (i = 0; i < board->size->x; i++) {
         if (column_free(board, i)) {
             move(board, i);
             if (has_won(board, board->player^1)) {
-                    undo(board, 1);
-                    return i;
+                undo(board, 1);
+                best_move = i;
+#if AI_DEBUG == 1
+                printf("Best move through winning: %d.\n", best_move);
+#endif
+                goto end;
             }
 
             res = -alpha_beta(board, -beta, -alpha);
             undo(board, 1);
 
             if (res >= beta) {
-                return i;
+                best_move = i;
+#if AI_DEBUG == 1
+                printf("Best move through beta cut-off: %d.\n", best_move);
+#endif
+                goto end;
             }
 
             if (res > alpha) {
@@ -182,5 +237,12 @@ int recommend_move(board *board)
             }
         }
     }
-    return i;
+#if AI_DEBUG == 1
+    printf("Best move through brute-forcing: %d.\n", best_move);
+#endif
+    end:
+    printf("Done. Took %d steps.\n", ai_counter);
+    print_hash_stats();
+    printf("Result: %d\n", best_move);
+    return best_move;
 }

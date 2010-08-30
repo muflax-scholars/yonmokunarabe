@@ -8,17 +8,29 @@
 #include "ai.h"
 #include "board.h"
 
-#define HASHSIZE 65535
+#define HASHSIZE (1 * (1<<(10+10)))    /* Size of internal hash. */
+#define HASH_CUT_OFF 20 			   /* Don't hash boards after that many
+										  turns. Set to -1 to disable cut-off or
+										  to 0 to disable the hash altogether.
+										  A value of around 20 doesn't affect
+										  performance much and safes lots of
+										  memory so you can turn down HASHSIZE
+										  by about 10. */
+#define HASH_REPLACE 1                 /* Should collisions replace an old slot?
+										  Replacing safes about up to 80% */
 
 typedef struct hash_node {
-	uint64_t board;
+	uint64_t bitmap[2];
 	board_state res;
+#if HASH_REPLACE == 0
 	struct hash_node *next;
+#endif
 } hash_node;
 
 void init_hash();
 board_state get_hash(board *board);
 board_state set_hash(board *board, board_state res);
+void print_hash_stats();
 
 #endif /* end of include guard: YONMOKUNARABE_HASH_H */
 

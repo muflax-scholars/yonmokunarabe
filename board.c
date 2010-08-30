@@ -9,9 +9,24 @@
 #include "board.h"
 #include "common.h"
 
+#define MOVE_DEBUG 0 /* print debug info when making moves */
+
+/* Array of Zobrist numbers. 4 bits for each coordinate and 1 bit for the
+ * player. */
+uint64_t zobrist[1<<9];
+
 /* Initialize board. Just allocate and pass the args. */
 void init_board(board *board, board_size *size)
 {
+    if (size->x * (size->y+1) > 64) {
+        printf("Sorry, can't encode that large boards.\n");
+        exit(1);
+    }
+
+    if (size->x < 4 || size->y < 4) {
+        printf("Each side of the board has to be at least 4 fields long.\n");
+    }
+
     printf("Initializing board (%dx%d)...\n", size->x, size->y);
     board->size          = size;
     board->player        = WHITE;
@@ -19,6 +34,7 @@ void init_board(board *board, board_size *size)
     board->max_turns     = size->x * size->y;
     board->bitmap[WHITE] = 0;
     board->bitmap[BLACK] = 0;
+    board->hash          = 0;
     
     if ((board->height_map = malloc(sizeof(int) * board->size->x)) == NULL)
         abort();
@@ -99,9 +115,11 @@ int move(board *board, int col)
 {
     uint64_t bit;
 
-    /*printf("Moving in col %d...\n", col);*/
-    /*printf("Before:\n");*/
-    /*print_board(board);*/
+#if MOVE_DEBUG == 1
+    printf("Moving in col %d...\n", col);
+    printf("Before:\n");
+    print_board(board);
+#endif
 
     if (col < 0 || col >= board->size->x) {
         if (verbose)
@@ -110,6 +128,11 @@ int move(board *board, int col)
     }
 
     if (board->height_map[col] < board->size->y) {
+        /* update hash */
+        /* TODO: symmetric hash, too */
+        board->hash ^= zobrist_number(col, 
+                                      board->height_map[col], 
+                                      board->player);
         /* move */
         bit = bitpos(board, col, board->height_map[col]);
         board->bitmap[board->player] ^= bit;
@@ -118,8 +141,10 @@ int move(board *board, int col)
         board->history[board->turn] = col;
         board->turn += 1;
         
-        /*printf("After:\n");*/
-        /*print_board(board);*/
+#if MOVE_DEBUG == 1
+        printf("After:\n");
+        print_board(board);
+#endif
         return 0;
     } else {
         if (verbose)
@@ -136,9 +161,11 @@ int undo(board *board, int n)
     uint64_t bit;
     int col;
     
-    /*printf("Undoing %d moves...\n", n);*/
-    /*printf("Before:\n");*/
-    /*print_board(board);*/
+#if MOVE_DEBUG == 1
+    printf("Undoing %d moves...\n", n);
+    printf("Before:\n");
+    print_board(board);
+#endif
 
     while (n > 0 && board->turn > 0) {
         /* undo */
@@ -149,9 +176,17 @@ int undo(board *board, int n)
         
         bit = bitpos(board, col, board->height_map[col]);
         board->bitmap[board->player] ^= bit;
+        
+        /* update hash */
+        /* TODO: symmetric hash, too */
+        board->hash ^= zobrist_number(col, 
+                                      board->height_map[col], 
+                                      board->player);
     
-        /*printf("After:\n");*/
-        /*print_board(board);*/
+#if MOVE_DEBUG == 1
+        printf("After:\n");
+        print_board(board);
+#endif
         return 0;
     }
 
@@ -206,18 +241,6 @@ int reset(board *board)
     return undo(board, board->turn);
 }
 
-/* Returns a symmetric hash for the board. */
-uint64_t board_hash(board *board)
-{
-    int i;
-    uint64_t hash = 0;
-    for (i = 0; i < board->size->x; i++) {
-        hash += 1 << board->height_map[i];
-    }
-    hash |= board->bitmap[WHITE];
-    return hash;
-}
-
 /* Returns 1 if column is playable, 0 otherwise. */
 int column_free(board *board, int col)
 {
@@ -249,5 +272,28 @@ void complex_move(board *board, char s[]) {
     char c;
     for (i=0; (c=s[i]); i++) {
         move(board, c-'0');
+    }
+}
+
+/* Returns the Zobrist number for the given position and player. */
+uint64_t zobrist_number(int x, int y, players player)
+{
+    return zobrist[x + (y<<4) + (player << 8)];
+}
+
+/* Initializes Zobrist array. */
+void init_zobrist()
+{
+    int x, y;
+    players p;
+
+    srand(4815162342);
+
+    for (x = 0; x < 16; x++) {
+        for (y = 0; y < 16; y++) {
+            for (p = 0; p < 2; p++) {
+                zobrist[x + (y<<4) + (p <<8)] = (uint64_t) rand();                
+            }
+        }
     }
 }

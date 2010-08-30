@@ -18,6 +18,7 @@ typedef enum {
 
 board_state solve(board *board);
 board_state alpha_beta(board *board, board_state alpha, board_state beta);
+int recommend_move(board *board);
 
 #endif /* end of include guard: YONMOKUNARABE_AI_H */
 

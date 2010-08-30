@@ -20,6 +20,8 @@ typedef struct {
     uint64_t bitmap[2];        /* occupied positions for each player */
     unsigned int *height_map;  /* height of each column */
     int *history;              /* move history */
+    uint64_t hash;             /* incremental hash */
+    uint64_t sym_hash;         /* symmetrical hash */
 } board;
 
 typedef enum { 
@@ -36,11 +38,12 @@ int move(board *board, int col);
 int has_won(board *board, players player);
 int undo(board *board, int n);
 int reset(board *board);
-uint64_t board_hash(board *board);
 void fast_move(board *board, int col, players player);
 void fast_undo(board *board, int col, players player);
 int column_free(board *board, int col);
 void complex_move(board *board, char s[]);
+uint64_t zobrist_number(int x, int y, players player);
+void init_zobrist();
 
 #endif /* end of include guard: YONMOKUNARABE_BOARD_H */
 
