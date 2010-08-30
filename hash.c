@@ -17,7 +17,6 @@ unsigned int col_counter  = 0; /* How many collisions happened? */
 unsigned int miss_counter = 0; /* How many entries couldn't be found? */
 
 /* Return result from hash. */
-/* TODO: Use symmetrical hash, too. */
 board_state get_hash(board *board)
 {
 	hash_node *node;
@@ -59,6 +58,23 @@ board_state get_hash(board *board)
 board_state set_hash(board *board, board_state res)
 {
 	hash_node *node, *new;
+	uint64_t board_hash;
+
+#if USE_SYMMETRY == 1
+#if SYMMETRY_CUTOFF > -1
+	if (board->turn < SYMMETRY_CUTOFF) {
+#endif
+		if (board->hash > board->sym_hash) {
+			board_hash = board->hash;
+		} else {
+			board_hash = board->sym_hash;
+		}
+#if SYMMETRY_CUTOFF > -1
+	}
+#endif
+#else
+	board_hash = board->hash;
+#endif
     
 #if HASH_CUT_OFF > -1
 	/* Skip hashs if recalculation would be faster. */
@@ -77,17 +93,17 @@ board_state set_hash(board *board, board_state res)
 	new->res       = res;
 	new->next      = NULL;
 
-	node = hash[board->hash % HASHSIZE];
+	node = hash[board_hash % HASHSIZE];
 	if (node != NULL) { /* insert node into list */
 		col_counter += 1;
 		new->next = node;
 	} else {
 		hash_counter += 1;
 	}
-	hash[board->hash % HASHSIZE] = new;
+	hash[board_hash % HASHSIZE] = new;
 #else
 	/* Collisions replace the old entry. */
-	node = hash[board->hash % HASHSIZE];
+	node = hash[board_hash % HASHSIZE];
 	if (node != NULL) { /* replace old node */
 		col_counter += 1;
 		node->bitmap[0] = board->bitmap[0];
@@ -100,7 +116,7 @@ board_state set_hash(board *board, board_state res)
 		new->bitmap[0] = board->bitmap[0];
 		new->bitmap[1] = board->bitmap[1];
 		new->res       = res;
-		hash[board->hash % HASHSIZE] = new;
+		hash[board_hash % HASHSIZE] = new;
 	}
 #endif
 	/* Return same result regardlass of hash. */

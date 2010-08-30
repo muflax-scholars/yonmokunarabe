@@ -35,6 +35,9 @@ void init_board(board *board, board_size *size)
     board->bitmap[WHITE] = 0;
     board->bitmap[BLACK] = 0;
     board->hash          = 0;
+#if USE_SYMMETRY == 1
+    board->sym_hash      = 0;
+#endif
     
     if ((board->height_map = malloc(sizeof(int) * board->size->x)) == NULL)
         abort();
@@ -129,10 +132,20 @@ int move(board *board, int col)
 
     if (board->height_map[col] < board->size->y) {
         /* update hash */
-        /* TODO: symmetric hash, too */
-        board->hash ^= zobrist_number(col, 
-                                      board->height_map[col], 
-                                      board->player);
+        board->hash ^= zobrist_number(
+                col, 
+                board->height_map[col], 
+                board->player);
+#if USE_SYMMETRY == 1
+#if SYMMETRY_CUTOFF > -1
+        if (board->turn <= SYMMETRY_CUTOFF) {
+            board->sym_hash ^= zobrist_number(
+                    board->size->x - col, 
+                    board->size->y - board->height_map[col], 
+                    board->player);
+        }
+#endif
+#endif
         /* move */
         bit = bitpos(board, col, board->height_map[col]);
         board->bitmap[board->player] ^= bit;
@@ -178,10 +191,20 @@ int undo(board *board, int n)
         board->bitmap[board->player] ^= bit;
         
         /* update hash */
-        /* TODO: symmetric hash, too */
-        board->hash ^= zobrist_number(col, 
-                                      board->height_map[col], 
-                                      board->player);
+        board->hash ^= zobrist_number(
+                col, 
+                board->height_map[col], 
+                board->player);
+#if USE_SYMMETRY == 1
+#if SYMMETRY_CUTOFF > -1
+        if (board->turn <= SYMMETRY_CUTOFF) {
+            board->sym_hash ^= zobrist_number(
+                    board->size->x - col, 
+                    board->size->y - board->height_map[col], 
+                    board->player);
+        }
+#endif
+#endif
     
 #if MOVE_DEBUG == 1
         printf("After:\n");
@@ -287,7 +310,7 @@ void init_zobrist()
     int x, y;
     players p;
 
-    srand(4815162342);
+    srand(108);
 
     for (x = 0; x < 16; x++) {
         for (y = 0; y < 16; y++) {

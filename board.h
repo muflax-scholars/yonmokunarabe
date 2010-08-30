@@ -7,6 +7,11 @@
 
 #include <stdint.h>
 
+#define USE_SYMMETRY 0 			/* Use additional symmetric hash? This is
+								   generally very slow and not worth it. */
+#define SYMMETRY_CUTOFF 20      /* Ignore symmetry hash after that many turns.
+								   Set to -1 to turn off cut-off. */
+
 typedef struct {
     unsigned int x;
     unsigned int y;
@@ -21,7 +26,9 @@ typedef struct {
     unsigned int *height_map;  /* height of each column */
     int *history;              /* move history */
     uint64_t hash;             /* incremental hash */
+#if USE_SYMMETRY == 1
     uint64_t sym_hash;         /* symmetrical hash */
+#endif
 } board;
 
 typedef enum { 
