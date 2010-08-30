@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "board.h"
 #include "common.h"
 
@@ -21,8 +22,10 @@ void init_board(board *board, board_size *size)
     
     if ((board->height_map = malloc(sizeof(int) * board->size->x)) == NULL)
         abort();
-    if ((board->history = malloc(sizeof(int) * (board->max_turns + 1))) == NULL)
+    memset(board->height_map, 0, sizeof(int) * board->size->x);
+    if ((board->history = malloc(sizeof(int) * (board->max_turns))) == NULL)
         abort();
+    memset(board->history, 0, sizeof(int) * board->max_turns);
 }
 
 /* Frees all associated structures within a board so you can free it. 
@@ -34,10 +37,13 @@ void destroy_board(board *board)
     free(board->history);
 }
 
-/* Return bit from bitmap matching coordinates x, y. */
+/* Return bit from bitmap matching coordinates x, y.
+ * Note that there is an intentional free bit between each column to enable fast
+ * detection of won games.
+ */
 uint64_t bitpos(board *board, int x, int y)
 {
-    return ((uint64_t)1 << (x * (board->size->y) + y));
+    return ((uint64_t)1 << (x * (board->size->y+1) + y));
 }
 
 /* Return true if position is blocked by either player. */
@@ -166,22 +172,30 @@ int has_won(board *board, players player)
      * time. ;)
      */
     pos = board->bitmap[player]; 
+
     /* \ */
     x = pos & (pos >> board->size->y);
-    if (x & (x >> (2*board->size->y)))  
+    if (x & (x >> (2*board->size->y))) {  
         return 1;
+    }
+    
     /* - */
     x = pos & (pos >> (board->size->y+1));
-    if (x & (x >> (2*board->size->y+1)))  
+    if (x & (x >> (2*(board->size->y+1)))) {
         return 1;
+    }
+
     /* / */
     x = pos & (pos >> (board->size->y+2));
-    if (x & (x >> (2*board->size->y+2)))  
+    if (x & (x >> (2*(board->size->y+2)))) {
         return 1;
+    }
+    
     /* | */
     x = pos & (pos >> 1);
-    if (x & (x >> 2))  
+    if (x & (x >> 2)) {  
         return 1;
+    }
     
     return 0;
 }
