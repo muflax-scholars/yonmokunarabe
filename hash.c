@@ -138,15 +138,17 @@ void init_hash()
 
 	for (i = 0; i < HASHSIZE; i++) {
 		node = hash[i];
-		while (node != NULL) {
 #if HASH_REPLACE == 0
+		while (node != NULL) {
 			next = node->next;
 			free(node);
 			node = next;
-#else
-			free(node);
-#endif
 		}
+#else
+		if (node != NULL) {
+			free (node);
+		}
+#endif
 		hash[i] = NULL;
 	} 
 }

@@ -53,7 +53,7 @@ board_state solve(board *board)
 /* Alpha-beta search, returns result. */
 board_state alpha_beta(board *board, board_state alpha, board_state beta)
 {
-    board_state hash, res;
+    board_state res;
     int threat = -1;
     int possible_moves = 0;
     int i, j;
@@ -72,28 +72,28 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     }
 
     /* Check if a solution is available in the hash. */
-    hash = get_hash(board);
+    res = get_hash(board);
 #if AI_DEBUG == 1
-    printf("Hash: %d\n", hash);
+    printf("Hash: %d\n", res);
 #endif
-    switch (hash) {
+    switch (res) {
         /* The hash may not be accurate. If it is not, use it to improve our
          * boundaries. If that already allows us to make an accurate assessment,
          * use it. */
         case WIN:
         case LOSE:
         case DRAW:
-            return hash;
+            return res;
         case MAYBE_LOSE:
             beta = DRAW;
             if (alpha >= beta) {
-                return hash;
+                return res;
             }
             break;
         case MAYBE_WIN:
             alpha = DRAW;
             if (alpha >= beta) {
-                return hash;
+                return res;
             }
             break;
         case UNKNOWN:
