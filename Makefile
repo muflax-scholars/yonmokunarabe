@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -ansi -std=c99
+CFLAGS=-g -Wall -ansi -std=c99 -O2
 LDFLAGS=
 
 FILES = board.o ai.o hash.o
