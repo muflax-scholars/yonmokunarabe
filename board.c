@@ -141,7 +141,7 @@ int move(board *board, int col)
         if (board->turn <= SYMMETRY_CUTOFF) {
             board->sym_hash ^= zobrist_number(
                     board->size->x - col, 
-                    board->size->y - board->height_map[col], 
+                    board->height_map[col], 
                     board->player);
         }
 #endif
@@ -200,7 +200,7 @@ int undo(board *board, int n)
         if (board->turn <= SYMMETRY_CUTOFF) {
             board->sym_hash ^= zobrist_number(
                     board->size->x - col, 
-                    board->size->y - board->height_map[col], 
+                    board->height_map[col], 
                     board->player);
         }
 #endif
