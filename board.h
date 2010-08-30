@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #define USE_SYMMETRY 0 			/* Use additional symmetric hash? This is
-								   generally very slow and not worth it. */
-#define SYMMETRY_CUTOFF 20      /* Ignore symmetry hash after that many turns.
+								   generally very slow and not worth it.
+								   However, when doing move reordering, it may
+								   be beneficial. */
+#define SYMMETRY_CUT_OFF 20     /* Ignore symmetry hash after that many turns.
 								   Set to -1 to turn off cut-off. */
 
 typedef struct {

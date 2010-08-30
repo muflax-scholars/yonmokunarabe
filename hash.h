@@ -8,7 +8,7 @@
 #include "ai.h"
 #include "board.h"
 
-#define HASHSIZE (1 * (1<<(10+10)))    /* Size of internal hash. */
+#define HASHSIZE (10 * (1<<(10+10)))   /* Size of internal hash. */
 #define HASH_CUT_OFF 20 			   /* Don't hash boards after that many
 										  turns. Set to -1 to disable cut-off or
 										  to 0 to disable the hash altogether.
@@ -17,7 +17,8 @@
 										  memory so you can turn down HASHSIZE
 										  by about 10. */
 #define HASH_REPLACE 1                 /* Should collisions replace an old slot?
-										  Replacing safes about up to 80% */
+										  Replacing safes plenty of memory and 
+										  incurs almost no additional misses. */
 
 typedef struct hash_node {
 	uint64_t bitmap[2];

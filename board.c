@@ -141,12 +141,14 @@ int move(board *board, int col)
                 board->height_map[col], 
                 board->player);
 #if USE_SYMMETRY == 1
-#if SYMMETRY_CUTOFF > -1
-        if (board->turn <= SYMMETRY_CUTOFF) {
+#if SYMMETRY_CUT_OFF > -1
+        if (board->turn <= SYMMETRY_CUT_OFF) {
+#endif
             board->sym_hash ^= zobrist_number(
                     board->size->x - col, 
                     board->height_map[col], 
                     board->player);
+#if SYMMETRY_CUT_OFF > -1
         }
 #endif
 #endif
@@ -200,12 +202,14 @@ int undo(board *board, int n)
                 board->height_map[col], 
                 board->player);
 #if USE_SYMMETRY == 1
-#if SYMMETRY_CUTOFF > -1
-        if (board->turn <= SYMMETRY_CUTOFF) {
+#if SYMMETRY_CUT_OFF > -1
+        if (board->turn <= SYMMETRY_CUT_OFF) {
+#endif
             board->sym_hash ^= zobrist_number(
                     board->size->x - col, 
                     board->height_map[col], 
                     board->player);
+#if SYMMETRY_CUT_OFF > -1
         }
 #endif
 #endif

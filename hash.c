@@ -61,15 +61,15 @@ board_state set_hash(board *board, board_state res)
 	uint64_t board_hash;
 
 #if USE_SYMMETRY == 1
-#if SYMMETRY_CUTOFF > -1
-	if (board->turn < SYMMETRY_CUTOFF) {
+#if SYMMETRY_CUT_OFF > -1
+	if (board->turn < SYMMETRY_CUT_OFF) {
 #endif
 		if (board->hash > board->sym_hash) {
 			board_hash = board->hash;
 		} else {
 			board_hash = board->sym_hash;
 		}
-#if SYMMETRY_CUTOFF > -1
+#if SYMMETRY_CUT_OFF > -1
 	}
 #endif
 #else
