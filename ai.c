@@ -156,10 +156,9 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
         res = -alpha_beta(board, -beta, -alpha);
         undo(board, 1);
 
-        if (res >= beta) {
-            return set_hash(board, beta);
-        } else {
-            return set_hash(board, res);
+        if (res >= beta) { /* cut-off */
+            res = beta;
+            score_move(board, i);
         }
     } else { /* No threat, so try all possible moves. */
 #if AI_DEBUG == 1
@@ -198,18 +197,19 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 #if AI_DEBUG == 1
                         printf("Cut-off: %d\n", res);
 #endif
-                        goto end;
+                        goto ab_end;
                     }
                     alpha = res;
                 }
             }
         }
-#if AI_DEBUG == 1
-        printf("Res: %d\n", res);
-#endif
-        end:
-        return set_hash(board, res);
     }
+
+    ab_end:
+#if AI_DEBUG == 1
+    printf("Res: %d\n", res);
+#endif
+    return set_hash(board, res);
 }
 
 /* Recommend the next move. 
@@ -238,10 +238,13 @@ int recommend_move(board *board)
 #if AI_DEBUG == 1
                 printf("Best move through winning: %d.\n", best_move);
 #endif
-                goto end;
+                goto best_move_end;
             }
 
             res = -alpha_beta(board, -beta, -alpha);
+#if AI_DEBUG == 1
+            printf("Move %d would lead to: %d.\n", i, res);
+#endif
             undo(board, 1);
 
             if (res >= beta) {
@@ -249,7 +252,7 @@ int recommend_move(board *board)
 #if AI_DEBUG == 1
                 printf("Best move through beta cut-off: %d.\n", best_move);
 #endif
-                goto end;
+                goto best_move_end;
             }
 
             if (res > alpha) {
@@ -261,7 +264,7 @@ int recommend_move(board *board)
 #if AI_DEBUG == 1
     printf("Best move through brute-forcing: %d.\n", best_move);
 #endif
-    end:
+    best_move_end:
     printf("Done. Took %d steps.\n", ai_counter);
     print_hash_stats();
     printf("Result: %d\n", best_move);
