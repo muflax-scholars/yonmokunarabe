@@ -58,11 +58,16 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     int possible_moves = 0;
     int i, j;
     int reordered_moves[MAX_COLS]; /* Contains columns to check. */
+#if AI_DEBUG == 1
+    int n;
+#endif
 
     ai_counter += 1;
                 
 #if AI_DEBUG == 1
-    printf("Starting alpha-beta #%d...\n", ai_counter);
+    n = ai_counter;
+    printf("Starting alpha-beta #%d...\n", n);
+    printf("Alpha: %d, beta: %d.\n", alpha, beta);
     print_board(board);
 #endif
 
@@ -102,12 +107,26 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
             break;
     }
     
+    /* Prepare re-ordered moves. */
+    for (i = 0; i < board->size->x; i++) {
+        reordered_moves[i] = i;
+    }
+    reorder_moves(board, reordered_moves);
+#if AI_DEBUG == 1
+    printf("Reordered: ");
+    for (i = 0; i < board->size->x; i++) {
+        printf("%d ", reordered_moves[i]);
+    }
+    printf("\n");
+#endif
+    
 #if AI_DEBUG == 1
     printf("Checking for threats and winning moves...\n");
 #endif
     /* Detect all threats and winning moves. If there is more than 1 threat, 
      * the board is lost. */
-    for (i = 0; i < board->size->x; i++) {
+    for (j = 0; j < board->size->x; j++) {
+        i = reordered_moves[j];
         if (column_free(board, i)) {
             /* Note number of available moves for later. */
             possible_moves += 1;
@@ -147,6 +166,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
         }
     }
 
+
     /* There is a threat, so act against it. */
     if (threat != -1) {
 #if AI_DEBUG == 1
@@ -162,19 +182,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
         }
     } else { /* No threat, so try all possible moves. */
 #if AI_DEBUG == 1
-        printf("Testing all moves...\n");
-#endif
-        /* Prepare re-ordered moves. */
-        for (i = 0; i < board->size->x; i++) {
-            reordered_moves[i] = i;
-        }
-        reorder_moves(board, reordered_moves);
-#if AI_DEBUG == 1
-        printf("Reordered: ");
-        for (i = 0; i < board->size->x; i++) {
-            printf("%d ", reordered_moves[i]);
-        }
-        printf("\n");
+        printf("Testing all %d moves...\n", possible_moves);
 #endif
 
         for (j = 0; j < board->size->x; j++) {
@@ -203,11 +211,14 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
                 }
             }
         }
+        /* Found nothing good. */
+        res = alpha;
     }
 
     ab_end:
 #if AI_DEBUG == 1
-    printf("Res: %d\n", res);
+
+    printf("Res from #%d: %d\n", n, res);
 #endif
     return set_hash(board, res);
 }
@@ -279,7 +290,6 @@ void init_reorder(board_size *size)
     printf("Initializing move order history...\n");
     /* #TODO: start from center */
     for (i = 0; i < size->x; i++) {
-        /*reordered_moves[i] = i;*/
         for (j = 0; j < MAX_TURNS; j++) {
             move_scores[j][i] = 0;
         }
@@ -308,6 +318,7 @@ void reorder_moves(board *board, int moves[])
 }
 
 /* Adjust score for given column. */
+/* #TODO: use possible_moves for stronger scores? */
 void score_move(board *board, int col)
 {
     int i;
