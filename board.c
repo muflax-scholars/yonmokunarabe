@@ -113,6 +113,7 @@ void print_board(board *board)
     for (i=0; i < board->turn; i++) {
         printf("%c", board->history[i] + '0');
     }
+    printf(", Zobrist: %d", board->hash);
     printf("\n");
 }
 
