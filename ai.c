@@ -318,7 +318,6 @@ void reorder_moves(board *board, int moves[])
 }
 
 /* Adjust score for given column. */
-/* #TODO: use possible_moves for stronger scores? */
 void score_move(board *board, int col)
 {
     int i;

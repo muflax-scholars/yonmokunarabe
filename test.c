@@ -116,8 +116,8 @@ static char* all_tests() {
     mu_run_test(test_solving_4x5);
     mu_run_test(test_solving_5x4);
     mu_run_test(test_solving_5x5);
-    /*mu_run_test(test_solving_6x5);*/
-    /*mu_run_test(test_solving_5x6);*/
+    mu_run_test(test_solving_6x5);
+    mu_run_test(test_solving_5x6);
     mu_run_test(test_solving_6x4);
     mu_run_test(test_solving_4x6);
     
