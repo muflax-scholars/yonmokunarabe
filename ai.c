@@ -236,13 +236,15 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
                 possible_moves -= 1;
 
                 if (alpha >= beta) { /* cut-off */
-                    /* Reward columns with many cut-offs. */
-                    /* #TODO: take possible_moves into consideration? */
-                    score_move(board, i);
-                    
-                    /* It may get better, but this is irrelevant now. */
-                    if (res == DRAW && possible_moves > 0) {
-                        res = MAYBE_WIN;
+                    /* A low beta may hide a successful WIN, which doesn't
+                     * matter this time, but if we saved it like this, the hash
+                     * would be wrong, so correct for this. */
+                    if (possible_moves > 0) {
+                        /* Reward columns with cut-offs. */
+                        score_move(board, i);
+                        if (res == DRAW) {
+                            res = MAYBE_WIN;
+                        }
                     }
 #if AI_DEBUG == 1
                     if (board->turn <= DEBUG_DEPTH) {
@@ -256,6 +258,12 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     }
 
     ab_end:
+    /* Improve score through hash if we have MAYBE_WIN and MAYBE_LOSE at the
+     * same time. */
+    if (res == -hash) {
+        res = DRAW;
+    }
+
 #if AI_DEBUG == 1
     if (board->turn <= DEBUG_DEPTH) {
         printf("Res from #%d: %d\n", n, res);
@@ -326,13 +334,13 @@ int recommend_move(board *board)
 /* Initialize move reordering for given board size. */
 void init_reorder(board_size *size)
 {
-    int i, j;
+    int i, j, s;
 
     printf("Initializing move order history...\n");
-    /* #TODO: start from center */
     for (i = 0; i < size->x; i++) {
         for (j = 0; j < MAX_TURNS; j++) {
-            move_scores[j][i] = 0;
+            s = min(i, size->x - i - 1);
+            move_scores[j][i] = s;
         }
     }
 }
