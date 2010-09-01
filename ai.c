@@ -120,7 +120,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
         reorder_moves(board, reordered_moves);
     }
 #if AI_DEBUG == 1
-    if (board->turn <= DEBUG_DEPTH) {
+    if (board->turn <= (min(DEBUG_DEPTH, REORDER_DEPTH))) {
         printf("Reordered: ");
         for (i = 0; i < board->size->x; i++) {
             printf("%d ", reordered_moves[i]);
