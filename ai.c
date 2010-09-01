@@ -344,9 +344,9 @@ void score_move(board *board, int col)
     int i;
     for (i = 0; i < board->size->x; i++) {
         if (i == col) {
-            move_scores[board->turn][col] += 1;
+            move_scores[board->turn][i] += 1;
         } else {
-            move_scores[board->turn][col] -= 1;
+            move_scores[board->turn][i] -= 1;
         }
     }
 }
