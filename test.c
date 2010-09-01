@@ -109,28 +109,28 @@ static char* test_solving_6x4() {
 /* Find a specific bug. */
 static char* test_solving_6x4_bug() {
     new_board(6, 4);
-    complex_move(&board, "232220");
-    mu_assert("Solving 6x4 broken.", solve(&board) == LOSE);
+    complex_move(&board, "23");
+    mu_assert("Solving 6x4-23 broken.", solve(&board) == LOSE);
     return 0;
 }
 
 /* Run all tests. */
 static char* all_tests() {
-    /*mu_run_test(test_winning_1);*/
-    /*mu_run_test(test_winning_3);*/
-    /*mu_run_test(test_losing_1);*/
+    mu_run_test(test_winning_1);
+    mu_run_test(test_winning_3);
+    mu_run_test(test_losing_1);
 
-    /*mu_run_test(test_solving_4x4);*/
-    /*mu_run_test(test_solving_4x5);*/
-    /*mu_run_test(test_solving_5x4);*/
-    /*mu_run_test(test_solving_5x5);*/
+    mu_run_test(test_solving_4x4);
+    mu_run_test(test_solving_4x5);
+    mu_run_test(test_solving_5x4);
+    mu_run_test(test_solving_5x5);
 
     mu_run_test(test_solving_6x4_bug);
 
-    /*mu_run_test(test_solving_6x4);*/
-    /*mu_run_test(test_solving_4x6);*/
-    /*mu_run_test(test_solving_6x5);*/
-    /*mu_run_test(test_solving_5x6);*/
+    mu_run_test(test_solving_6x4);
+    mu_run_test(test_solving_4x6);
+    mu_run_test(test_solving_6x5);
+    mu_run_test(test_solving_5x6);
     
     /*mu_run_test(test_fhourstone_1);*/
     /*mu_run_test(test_fhourstone_2);*/

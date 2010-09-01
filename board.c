@@ -110,10 +110,14 @@ void print_board(board *board)
         printf("\n");
     }
     printf("turn: %d, player: %c, history: ", board->turn, "WB"[board->player]);
-    for (i=0; i < board->turn; i++) {
-        printf("%c", board->history[i] + '0');
+    if (board->turn == 0) {
+        printf("n/a");
+    } else {
+        for (i=0; i < board->turn; i++) {
+            printf("%c", board->history[i] + '0');
+        }
     }
-    printf(", Zobrist: %d", board->hash);
+    printf(", Zobrist: %d", (int)board->hash);
     printf("\n");
 }
 

@@ -11,8 +11,8 @@
 
 unsigned int ai_counter = 0; /* Steps the AI took to solve a board. */
 
-#define AI_DEBUG 1 /* print AI debug info */
-#define DEBUG_DEPTH 15 /* don't print info after that depth */
+#define AI_DEBUG 0 /* print AI debug info */
+#define DEBUG_DEPTH 10 /* don't print info after that depth */
 
 int move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column for 
                                          each depth. */ 
@@ -54,8 +54,10 @@ board_state solve(board *board)
 /* Alpha-beta search, returns result. */
 board_state alpha_beta(board *board, board_state alpha, board_state beta)
 {
-    board_state res;
-    int threat = -1;
+    board_state temp   = UNKNOWN;
+    board_state res    = UNKNOWN;
+    board_state hash   = UNKNOWN;
+    int threat         = -1;
     int possible_moves = 0;
     int i, j;
     int reordered_moves[MAX_COLS]; /* Contains columns to check. */
@@ -80,30 +82,30 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     }
 
     /* Check if a solution is available in the hash. */
-    res = get_hash(board);
+    hash = get_hash(board);
 #if AI_DEBUG == 1
     if (board->turn <= DEBUG_DEPTH) {
-        printf("Hash: %d\n", res);
+        printf("Hash: %d\n", hash);
     }
 #endif
-    switch (res) {
+    switch (hash) {
         /* The hash may not be accurate. If it is not, use it to improve our
          * boundaries. If that already allows us to make an accurate assessment,
          * use it. */
         case WIN:
         case LOSE:
         case DRAW:
-            return res;
+            return hash;
         case MAYBE_LOSE:
             beta = DRAW;
             if (alpha >= beta) {
-                return res;
+                return hash;
             }
             break;
         case MAYBE_WIN:
             alpha = DRAW;
             if (alpha >= beta) {
-                return res;
+                return hash;
             }
             break;
         case UNKNOWN:
@@ -145,23 +147,27 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
                 printf("Threat on %d?\n", i);
             }
 #endif
-            /* threat? */
-            fast_move(board, i, board->player^1);
-            if (has_won(board, board->player^1)) {
+            /* Threat? Once there are already 2 threats, don't check for 
+             * more. */
+            if (threat != -2) {
+                fast_move(board, i, board->player^1);
+                if (has_won(board, board->player^1)) {
 #if AI_DEBUG == 1
-                if (board->turn <= DEBUG_DEPTH) {
-                    printf("Threat found: %d\n", i);
-                    print_board(board);
-                }
+                    if (board->turn <= DEBUG_DEPTH) {
+                        printf("Threat found: %d\n", i);
+                        print_board(board);
+                    }
 #endif
-                if (threat == -1) {
-                    threat = i;
-                } else { /* already another threat */
-                    fast_undo(board, i, board->player^1);
-                    return set_hash(board, LOSE);
+                    if (threat == -1) {
+                        threat = i;
+                    } else { 
+                        /* Found another threat, so unless there is still an instant
+                         * victory, we lost. */
+                        threat = -2;
+                    }
                 }
+                fast_undo(board, i, board->player^1);
             }
-            fast_undo(board, i, board->player^1);
 
 #if AI_DEBUG == 1
             if (board->turn <= DEBUG_DEPTH) {
@@ -183,18 +189,30 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
         }
     }
 
-    /* There is a threat, so act against it. */
-    if (threat != -1) {
+    if (threat == -2) {
+        /* More than 1 threat, so we lost. */
+        res = LOSE;
+    } else if (threat > -1) {
+        /* There is a threat, so act against it. */
 #if AI_DEBUG == 1
         if (board->turn <= DEBUG_DEPTH) {
             printf("Acting on threat...\n");
         }
 #endif
         move(board, threat);
-        res = -alpha_beta(board, -beta, -alpha);
+        temp = -alpha_beta(board, -beta, -alpha);
+        /* Improve score. */
+        res = max(res, temp);
         alpha = max(res, alpha);
+#if AI_DEBUG == 1
+        if (board->turn <= DEBUG_DEPTH) {
+            printf("Got back in %d: %d (res: %d, alpha: %d)\n", 
+                   n, temp, res, alpha); 
+        }
+#endif
         undo(board, 1);
-    } else { /* No threat, so try all possible moves. */
+    } else { 
+        /* No threat, so try all possible moves. */
 #if AI_DEBUG == 1
         if (board->turn <= DEBUG_DEPTH) {
             printf("Testing all %d moves...\n", possible_moves);
@@ -204,12 +222,14 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
             i = reordered_moves[j];
             if (column_free(board, i)) {
                 move(board, i);
-                res = -alpha_beta(board, -beta, -alpha);
-                /* Improve lower bound. */
+                temp = -alpha_beta(board, -beta, -alpha);
+                /* Improve score. */
+                res = max(res, temp);
                 alpha = max(res, alpha);
 #if AI_DEBUG == 1
                 if (board->turn <= DEBUG_DEPTH) {
-                    printf("New res in %d: %d (alpha: %d)\n", n, res, alpha); 
+                    printf("Got back in %d: %d (res: %d, alpha: %d)\n", 
+                            n, temp, res, alpha); 
                 }
 #endif
                 undo(board, 1);
@@ -221,12 +241,12 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
                     score_move(board, i);
                     
                     /* It may get better, but this is irrelevant now. */
-                    if (alpha == DRAW && possible_moves > 0) {
-                        alpha = MAYBE_WIN;
+                    if (res == DRAW && possible_moves > 0) {
+                        res = MAYBE_WIN;
                     }
 #if AI_DEBUG == 1
                     if (board->turn <= DEBUG_DEPTH) {
-                        printf("Cut-off: %d\n", alpha);
+                        printf("Cut-off: %d\n", res);
                     }
 #endif
                     goto ab_end;
@@ -238,10 +258,10 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     ab_end:
 #if AI_DEBUG == 1
     if (board->turn <= DEBUG_DEPTH) {
-        printf("Res from #%d: %d\n", n, alpha);
+        printf("Res from #%d: %d\n", n, res);
     }
 #endif
-    return set_hash(board, alpha);
+    return set_hash(board, res);
 }
 
 /* Recommend the next move. 
