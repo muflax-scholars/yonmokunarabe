@@ -111,12 +111,12 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
             break;
     }
     
-    /* Prepare re-ordered moves. */
-    for (i = 0; i < board->size->x; i++) {
-        reordered_moves[i] = i;
-    }
     /* Don't reorder moves near the end. This just introduces noise. */
     if (board->turn <= REORDER_DEPTH) {
+        /* Prepare re-ordered moves. */
+        for (i = 0; i < board->size->x; i++) {
+            reordered_moves[i] = i;
+        }
         reorder_moves(board, reordered_moves);
     }
 #if AI_DEBUG == 1
@@ -136,8 +136,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
 #endif
     /* Detect all threats and winning moves. If there is more than 1 threat, 
      * the board is lost. */
-    for (j = 0; j < board->size->x; j++) {
-        i = reordered_moves[j];
+    for (i = 0; i < board->size->x; i++) {
         if (column_free(board, i)) {
             /* Note number of available moves for later. */
             possible_moves += 1;
@@ -219,7 +218,11 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
         }
 #endif
         for (j = 0; j < board->size->x; j++) {
-            i = reordered_moves[j];
+            if (board->turn <= REORDER_DEPTH) {
+                i = reordered_moves[j];
+            } else {
+                i = j;
+            }
             if (column_free(board, i)) {
                 move(board, i);
                 temp = -alpha_beta(board, -beta, -alpha);
