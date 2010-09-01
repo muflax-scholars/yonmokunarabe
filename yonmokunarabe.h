@@ -8,7 +8,8 @@
 /* Different modes of operation. */
 enum modes { 
     MODE_NONE,
-    MODE_SOLVE
+    MODE_SOLVE,
+    MODE_RECOMMEND
 };
 
 #endif /* end of include guard: YONMOKUNARABE_H */

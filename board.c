@@ -303,6 +303,7 @@ void fast_undo(board *board, int col, players player)
 }
 
 /* Like move, but allows multiple moves at once. */
+/* #TODO: Should catch errors and allow moves > 9. */
 void complex_move(board *board, char s[]) {
     int i;
     char c;
