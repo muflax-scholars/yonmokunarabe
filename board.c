@@ -9,8 +9,6 @@
 #include "board.h"
 #include "common.h"
 
-#define MOVE_DEBUG 0 /* print debug info when making moves */
-
 /* Array of Zobrist numbers. 4 bits for each coordinate and 1 bit for the
  * player. */
 uint64_t zobrist[1<<9];

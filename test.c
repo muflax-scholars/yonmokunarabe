@@ -132,9 +132,9 @@ static char* all_tests() {
     mu_run_test(test_solving_6x5);
     mu_run_test(test_solving_5x6);
     
-    /*mu_run_test(test_fhourstone_1);*/
-    /*mu_run_test(test_fhourstone_2);*/
-    /*mu_run_test(test_fhourstone_3);*/
+    mu_run_test(test_fhourstone_1);
+    mu_run_test(test_fhourstone_2);
+    mu_run_test(test_fhourstone_3);
     return 0;
 }
 

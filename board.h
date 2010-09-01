@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#define MOVE_DEBUG 0 /* print debug info when making moves */
+
 #define USE_SYMMETRY 0 			/* Use additional symmetric hash? This is
 								   generally very slow and not worth it.
 								   However, when doing move reordering, it may

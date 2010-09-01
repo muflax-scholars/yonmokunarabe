@@ -12,5 +12,8 @@ enum modes {
     MODE_RECOMMEND
 };
 
+void usage(); 
+char *parse_size(char* arg, board_size* size);
+
 #endif /* end of include guard: YONMOKUNARABE_H */
 
