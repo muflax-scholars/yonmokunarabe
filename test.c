@@ -22,26 +22,6 @@ short verbose = 1;
 #define new_board(X, Y) board board; board_size size; \
                         size.x = X; size.y = Y; init_board(&board, &size);
                                 
-/* The 3 Fhourstone positions. */
-static char* test_fhourstone_1() {
-    new_board(7, 6);
-    complex_move(&board, "34350556");
-    mu_assert("Fhourstone 1 broken.", solve(&board) == WIN);
-    return 0;
-}
-static char* test_fhourstone_2() {
-    new_board(7, 6);
-    complex_move(&board, "2422460");
-    mu_assert("Fhourstone 2 broken.", solve(&board) == LOSE);
-    return 0;
-}
-static char* test_fhourstone_3() {
-    new_board(7, 6);
-    complex_move(&board, "02222000");
-    mu_assert("Fhourstone 3 broken.", solve(&board) == DRAW);
-    return 0;
-}
-
 /* Recommend easy moves. */ 
 static char* test_winning_1() {
     new_board(4, 4);
@@ -131,10 +111,6 @@ static char* all_tests() {
     mu_run_test(test_solving_4x6);
     mu_run_test(test_solving_6x5);
     mu_run_test(test_solving_5x6);
-    
-    mu_run_test(test_fhourstone_1);
-    mu_run_test(test_fhourstone_2);
-    mu_run_test(test_fhourstone_3);
     return 0;
 }
 

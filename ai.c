@@ -65,8 +65,8 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     ai_counter += 1;
                 
 #if AI_DEBUG == 1
+    n = ai_counter;
     if (board->turn <= DEBUG_DEPTH) {
-        n = ai_counter;
         printf("Starting alpha-beta #%d...\n", n);
         printf("Alpha: %d, beta: %d.\n", alpha, beta);
         print_board(board);
@@ -205,7 +205,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
         alpha = max(res, alpha);
 #if AI_DEBUG == 1
         if (board->turn <= DEBUG_DEPTH) {
-            printf("Got back in %d: %d (res: %d, alpha: %d)\n", 
+            printf("Got back in #%d: %d (res: %d, alpha: %d)\n", 
                    n, temp, res, alpha); 
         }
 #endif
@@ -231,7 +231,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
                 alpha = max(res, alpha);
 #if AI_DEBUG == 1
                 if (board->turn <= DEBUG_DEPTH) {
-                    printf("Got back in %d: %d (res: %d, alpha: %d)\n", 
+                    printf("Got back in #%d: %d (res: %d, alpha: %d)\n", 
                             n, temp, res, alpha); 
                 }
 #endif
