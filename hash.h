@@ -9,7 +9,7 @@
 #include "board.h"
 
 #define HASHSIZE (10 * (1<<(10+10)))   /* Size of internal hash. */
-#define HASH_CUT_OFF 20 			   /* Don't hash boards after that many
+#define HASH_CUT_OFF -1 			   /* Don't hash boards after that many
 										  turns. Set to -1 to disable cut-off or
 										  to 0 to disable the hash altogether.
 										  A value of around 20 doesn't affect

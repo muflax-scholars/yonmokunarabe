@@ -244,12 +244,6 @@ int has_won(board *board, players player)
      */
     pos = board->bitmap[player]; 
 
-    /* \ */
-    x = pos & (pos >> board->size->y);
-    if (x & (x >> (2*board->size->y))) {  
-        return 1;
-    }
-    
     /* - */
     x = pos & (pos >> (board->size->y+1));
     if (x & (x >> (2*(board->size->y+1)))) {
@@ -259,6 +253,12 @@ int has_won(board *board, players player)
     /* / */
     x = pos & (pos >> (board->size->y+2));
     if (x & (x >> (2*(board->size->y+2)))) {
+        return 1;
+    }
+    
+    /* \ */
+    x = pos & (pos >> board->size->y);
+    if (x & (x >> (2*board->size->y))) {  
         return 1;
     }
     

@@ -9,13 +9,10 @@
 #include "common.h"
 #include "hash.h"
 
-unsigned int ai_counter = 0; /* Steps the AI took to solve a board. */
+unsigned long ai_counter = 0; /* Steps the AI took to solve a board. */
 
-#define AI_DEBUG 0 /* print AI debug info */
-#define DEBUG_DEPTH 10 /* don't print info after that depth */
-
-int move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column for 
-                                         each depth. */ 
+long move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column for 
+                                          each depth. */ 
 
 /* Solves board from scratch, prints result. */
 board_state solve(board *board)
@@ -29,7 +26,7 @@ board_state solve(board *board)
     
     printf("Solving...\n");
     res = alpha_beta(board, LOSE, WIN);
-    printf("Done. Took %d steps.\n", ai_counter);
+    printf("Done. Took %lu steps.\n", ai_counter);
     print_hash_stats();
 
     printf("Result: ");
@@ -62,7 +59,7 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     int i, j;
     int reordered_moves[MAX_COLS]; /* Contains columns to check. */
 #if AI_DEBUG == 1
-    int n;
+    long n;
 #endif
 
     ai_counter += 1;
@@ -118,7 +115,10 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
     for (i = 0; i < board->size->x; i++) {
         reordered_moves[i] = i;
     }
-    reorder_moves(board, reordered_moves);
+    /* Don't reorder moves near the end. This just introduces noise. */
+    if (board->turn <= REORDER_DEPTH) {
+        reorder_moves(board, reordered_moves);
+    }
 #if AI_DEBUG == 1
     if (board->turn <= DEBUG_DEPTH) {
         printf("Reordered: ");
@@ -240,8 +240,11 @@ board_state alpha_beta(board *board, board_state alpha, board_state beta)
                      * matter this time, but if we saved it like this, the hash
                      * would be wrong, so correct for this. */
                     if (possible_moves > 0) {
-                        /* Reward columns with cut-offs. */
-                        score_move(board, i);
+                        /* Reward columns with cut-offs, but only until a 
+                         * certain depth. */
+                        if (board->turn <= REORDER_DEPTH) {
+                            score_move(board, i);
+                        }
                         if (res == DRAW) {
                             res = MAYBE_WIN;
                         }
@@ -325,7 +328,7 @@ int recommend_move(board *board)
     printf("Best move through brute-forcing: %d.\n", best_move);
 #endif
     best_move_end:
-    printf("Done. Took %d steps.\n", ai_counter);
+    printf("Done. Took %lu steps.\n", ai_counter);
     print_hash_stats();
     printf("Result: %d\n", best_move);
     return best_move;
@@ -369,14 +372,7 @@ void reorder_moves(board *board, int moves[])
 /* Adjust score for given column. */
 void score_move(board *board, int col)
 {
-    int i;
-    for (i = 0; i < board->size->x; i++) {
-        if (i == col) {
-            move_scores[board->turn][i] += 1;
-        } else {
-            move_scores[board->turn][i] -= 1;
-        }
-    }
+    move_scores[board->turn][col] += 1;
 }
     
 /* Initialize everything needed for AI operation. */

@@ -7,9 +7,16 @@
 
 #include "board.h"
                               
+#define AI_DEBUG 0 /* print AI debug info */
+#define DEBUG_DEPTH 10 /* don't print info after that depth */
+
 /* Currently, there can only be at most 16 columns and thus 60 turns. */
 #define MAX_COLS  16
 #define MAX_TURNS 60
+
+#define REORDER_DEPTH 10 /* Moves are only reordered until this depth. 
+							Set to 0 to (kinda) disable reordering. Typically,
+							the last turns aren't worth the sorting trouble. */
 
 typedef enum { 
     UNKNOWN    = -3,
