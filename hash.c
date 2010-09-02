@@ -20,12 +20,31 @@ unsigned long miss_counter = 0; /* How many entries couldn't be found? */
 board_state get_hash(board *board)
 {
 	hash_node *node;
+    uint64_t board_hash;
 	
 #if HASH_CUT_OFF > -1
 	/*Skip hashs if recalculation would be faster.*/
 	if (board->turn > HASH_CUT_OFF) {
 		return UNKNOWN;
 	}
+#endif
+
+#if USE_SYMMETRY == 1
+#if SYMMETRY_CUT_OFF > -1
+	if (board->turn < SYMMETRY_CUT_OFF) {
+#endif
+		if (board->hash > board->sym_hash) {
+			board_hash = board->hash;
+		} else {
+			board_hash = board->sym_hash;
+		}
+#if SYMMETRY_CUT_OFF > -1
+	} else {
+        board_hash = board->hash;
+    }
+#endif
+#else
+	board_hash = board->hash;
 #endif
 
 #if HASH_REPLACE == 0
@@ -58,7 +77,14 @@ board_state get_hash(board *board)
 board_state set_hash(board *board, board_state res)
 {
 	hash_node *node, *new;
-	uint64_t board_hash;
+	uint64_t board_hash = 0;
+
+#if HASH_CUT_OFF > -1
+	/* Skip hashs if recalculation would be faster. */
+	if (board->turn > HASH_CUT_OFF) {
+		return res;
+	}
+#endif
 
 #if USE_SYMMETRY == 1
 #if SYMMETRY_CUT_OFF > -1
@@ -70,19 +96,14 @@ board_state set_hash(board *board, board_state res)
 			board_hash = board->sym_hash;
 		}
 #if SYMMETRY_CUT_OFF > -1
+	} else {
+        board_hash = board->hash;
 	}
 #endif
 #else
 	board_hash = board->hash;
 #endif
     
-#if HASH_CUT_OFF > -1
-	/* Skip hashs if recalculation would be faster. */
-	if (board->turn > HASH_CUT_OFF) {
-		return res;
-	}
-#endif
-
 #if HASH_REPLACE == 0
 	/* Collisions are saved in a linked list. */
 
