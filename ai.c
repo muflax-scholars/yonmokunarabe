@@ -9,9 +9,9 @@
 #include "common.h"
 #include "hash.h"
 
-unsigned long ai_counter = 0; /* Steps the AI took to solve a board. */
+static unsigned long ai_counter = 0; /* Steps the AI took to solve a board. */
 
-long move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column for 
+static long move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column for 
                                           each depth. */ 
 
 /* Solves board from scratch, prints result. */

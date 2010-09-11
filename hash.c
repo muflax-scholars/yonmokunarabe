@@ -10,11 +10,11 @@
 #include "hash.h"
 
 /* What, you need more than one hash? Pff. */
-hash_node *hash[HASHSIZE];
+static hash_node *hash[HASHSIZE];
 
-unsigned long hash_counter = 0; /* How many slots of the hash are used? */
-unsigned long col_counter  = 0; /* How many collisions happened? */
-unsigned long miss_counter = 0; /* How many entries couldn't be found? */
+static unsigned long hash_counter = 0; /* How many slots of the hash are used? */
+static unsigned long col_counter  = 0; /* How many collisions happened? */
+static unsigned long miss_counter = 0; /* How many entries couldn't be found? */
 
 /* Return result from hash. */
 board_state get_hash(board *board)

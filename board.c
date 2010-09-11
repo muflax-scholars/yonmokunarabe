@@ -11,7 +11,7 @@
 
 /* Array of Zobrist numbers. 4 bits for each coordinate and 1 bit for the
  * player. */
-uint64_t zobrist[1<<9];
+static uint64_t zobrist[1<<9];
 
 /* Initialize board. Just allocate and pass the args. */
 void init_board(board *board, board_size *size)
