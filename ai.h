@@ -14,9 +14,9 @@
 #define MAX_COLS  16
 #define MAX_TURNS 60
 
-#define REORDER_DEPTH 10 /* Moves are only reordered until this depth. 
-							Set to 0 to (kinda) disable reordering. Typically,
-							the last turns aren't worth the sorting trouble. */
+#define REORDER_DEPTH 10 /* Moves are only reordered until this depth. Set to 0
+                            to (kinda) disable reordering. Typically, the last
+                            turns aren't worth the sorting trouble. */
 
 typedef enum { 
     UNKNOWN    = -3,

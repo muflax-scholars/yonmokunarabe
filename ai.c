@@ -11,8 +11,8 @@
 
 static unsigned long ai_counter = 0; /* Steps the AI took to solve a board. */
 
-static long move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column for 
-                                          each depth. */ 
+static long move_scores[MAX_TURNS][MAX_COLS]; /* Contains score for each column
+                                                 for each depth. */ 
 
 /* Solves board from scratch, prints result. */
 board_state solve(board *board)
