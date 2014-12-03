@@ -1,10 +1,10 @@
 CC=gcc
-CFLAGS=-g -Wall -ansi -std=c99 -O2
+CFLAGS=-g -Wall -ansi -std=c99 -O3
 LDFLAGS=
 
 FILES = board.o ai.o hash.o
 
-all: yonmokunarabe test 
+all: yonmokunarabe test
 
 include Makefile.dep
 
@@ -17,7 +17,7 @@ yonmokunarabe: yonmokunarabe.o $(FILES)
 test: test.o $(FILES)
 	$(CC) $(LDFLAGS) $(CFLAGS) $(^) -o $(@)
 
-clean: 
+clean:
 	$(RM) *.o yonmokunarabe test
 
 .PHONY: all clean
