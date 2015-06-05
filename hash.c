@@ -49,7 +49,7 @@ board_state get_hash(board *board)
 
 #if HASH_REPLACE == 0
 	/* Collisions are saved in a linked list. */
-	node = hash[board->hash % HASHSIZE];
+	node = hash[board_hash % HASHSIZE];
 	while (node != NULL) {
 		if (node->bitmap[WHITE] == board->bitmap[WHITE] &&
 			node->bitmap[BLACK] == board->bitmap[BLACK]) { /* hash found */
@@ -60,7 +60,7 @@ board_state get_hash(board *board)
 	}
 #else
 	/* Collisions replace the old entry. */
-	node = hash[board->hash % HASHSIZE];
+	node = hash[board_hash % HASHSIZE];
 	if (node != NULL) {
 		if (node->bitmap[WHITE] == board->bitmap[WHITE] &&
 			node->bitmap[BLACK] == board->bitmap[BLACK]) { /* hash found */
@@ -103,7 +103,7 @@ board_state set_hash(board *board, board_state res)
 #else
 	board_hash = board->hash;
 #endif
-    
+
 #if HASH_REPLACE == 0
 	/* Collisions are saved in a linked list. */
 
@@ -171,7 +171,7 @@ void init_hash()
 		}
 #endif
 		hash[i] = NULL;
-	} 
+	}
 }
 
 /* Prints hash stats. */
@@ -180,7 +180,7 @@ void print_hash_stats()
 	printf("Hash entries: %lu, collision: %lu, misses: %lu, "
 		   "collision percentage: %lu%%, used: %lu%%.\n",
 		   hash_counter, col_counter, miss_counter,
-		   col_counter*100 / (hash_counter > 0 ? hash_counter : 1), 
+		   col_counter*100 / (hash_counter > 0 ? hash_counter : 1),
 		   (hash_counter)*100 / HASHSIZE);
 		
 }
